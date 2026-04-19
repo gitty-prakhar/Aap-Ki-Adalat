@@ -86,7 +86,7 @@ const Layout = () => {
             {/* Wallet + Mobile Toggle */}
             <div className="flex items-center space-x-4">
               {/* Balance display */}
-              {isConnected && balance && (
+              {isConnected && balance && !isNaN(parseFloat(balance?.formatted)) && (
                 <span className="hidden lg:block text-[10px] font-mono text-gray-500">
                   {parseFloat(balance.formatted).toFixed(4)} {balance.symbol}
                 </span>
