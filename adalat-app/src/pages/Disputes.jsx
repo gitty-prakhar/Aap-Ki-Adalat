@@ -49,6 +49,7 @@ const EscrowItem = ({ escrowId }) => {
   const [isEvidenceModalOpen, setEvidenceModalOpen] = useState(false);
   const [evidenceAction, setEvidenceAction] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentTxType, setCurrentTxType] = useState(null);
 
   const { data: escrow, refetch } = useReadContract({
     address: ADDRESSES.EscrowFactory,
@@ -76,11 +77,16 @@ const EscrowItem = ({ escrowId }) => {
 
   useEffect(() => {
     if (txConfirmed) {
-      toast.success('Transaction confirmed!');
+      if (currentTxType === 'selectJurors') {
+        toast.success('Jury Successfully Convened! Voting is now open.');
+      } else {
+        toast.success('Transaction confirmed!');
+      }
+      setCurrentTxType(null);
       refetch();
       refetchJurors();
     }
-  }, [txConfirmed, refetch, refetchJurors]);
+  }, [txConfirmed, currentTxType, refetch, refetchJurors]);
 
   if (!escrow)
     return <div className="p-4 border border-dark-800 animate-pulse bg-dark-800/50 h-32"></div>;
@@ -135,6 +141,7 @@ const EscrowItem = ({ escrowId }) => {
   // NOTE: We pass an explicit gas limit because the contract uses gasleft()/block.gaslimit
   // for pseudo-randomness — Wagmi's auto-estimation overshoots and triggers a revert.
   const handleSelectJurors = () => {
+    setCurrentTxType('selectJurors');
     writeContract(
       {
         address: ADDRESSES.DisputeResolver,
