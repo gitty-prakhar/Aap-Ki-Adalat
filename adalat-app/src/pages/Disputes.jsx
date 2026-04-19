@@ -57,6 +57,17 @@ const EscrowItem = ({ escrowId }) => {
     args: [escrowId],
   });
 
+  // The escrowId maps 1:1 to disputeId in this contract architecture
+  const disputeId = escrowId;
+
+  // Read dispute jurors to know if selectJurors was already called
+  const { data: disputeJurors, refetch: refetchJurors } = useReadContract({
+    address: ADDRESSES.DisputeResolver,
+    abi: ABIS.DisputeResolver,
+    functionName: 'getDisputeJurors',
+    args: [disputeId],
+  });
+
   const { writeContract, data: txHash, isPending } = useWriteContract();
 
   const { isSuccess: txConfirmed } = useWaitForTransactionReceipt({
@@ -67,8 +78,9 @@ const EscrowItem = ({ escrowId }) => {
     if (txConfirmed) {
       toast.success('Transaction confirmed!');
       refetch();
+      refetchJurors();
     }
-  }, [txConfirmed, refetch]);
+  }, [txConfirmed, refetch, refetchJurors]);
 
   if (!escrow)
     return <div className="p-4 border border-dark-800 animate-pulse bg-dark-800/50 h-32"></div>;
@@ -118,6 +130,25 @@ const EscrowItem = ({ escrowId }) => {
     });
   };
 
+  // THE MISSING STEP: This was the bug. selectJurors() must be called after
+  // fileDispute() to lock eligible staked jurors onto the case for voting.
+  // NOTE: We pass an explicit gas limit because the contract uses gasleft()/block.gaslimit
+  // for pseudo-randomness — Wagmi's auto-estimation overshoots and triggers a revert.
+  const handleSelectJurors = () => {
+    writeContract(
+      {
+        address: ADDRESSES.DisputeResolver,
+        abi: ABIS.DisputeResolver,
+        functionName: 'selectJurors',
+        args: [disputeId],
+        gas: 300000n,
+      },
+      {
+        onError: (err) => toast.error('Convene Jury failed: ' + (err.shortMessage || err.message)),
+      }
+    );
+  };
+
   const handleEvidenceSubmit = async (file) => {
     try {
       setIsUploading(true);
@@ -158,12 +189,13 @@ const EscrowItem = ({ escrowId }) => {
   const isPartyA = address?.toLowerCase() === escrowData.partyA?.toLowerCase();
   const isPartyB = address?.toLowerCase() === escrowData.partyB?.toLowerCase();
   const statusStr = EscrowStatus[escrowData.status] || 'Unknown';
+  const jurorsSelected = disputeJurors && disputeJurors.length > 0;
 
   return (
     <>
       <div className="bg-dark-900 border border-dark-800 p-6 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 group hover:border-dark-700 transition-colors">
         <div className="space-y-2">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 flex-wrap gap-2">
             <span className="text-gold-500 font-mono text-sm px-2 py-0.5 bg-gold-500/10 border border-gold-500/20">
               #{escrowId.toString()}
             </span>
@@ -178,6 +210,17 @@ const EscrowItem = ({ escrowId }) => {
             >
               {statusStr}
             </span>
+            {statusStr === 'Disputed' && (
+              <span
+                className={`text-[10px] font-mono tracking-widest uppercase px-2 py-0.5 border ${
+                  jurorsSelected
+                    ? 'text-purple-400 border-purple-400/30 bg-purple-400/10'
+                    : 'text-yellow-400 border-yellow-400/30 bg-yellow-400/10'
+                }`}
+              >
+                {jurorsSelected ? `⚖ ${disputeJurors.length} Jurors Selected` : '⏳ Awaiting Jury'}
+              </span>
+            )}
           </div>
           <div className="text-sm font-mono text-gray-400">
             <span className="text-gray-500 uppercase tracking-widest text-[10px]">Amount:</span>{' '}
@@ -229,17 +272,32 @@ const EscrowItem = ({ escrowId }) => {
             </>
           )}
 
-          {statusStr === 'Disputed' && (isPartyA || isPartyB) && (
-            <button
-              onClick={() => {
-                setEvidenceAction(isPartyA ? 'appendEvidenceA' : 'appendEvidenceB');
-                setEvidenceModalOpen(true);
-              }}
-              disabled={isPending}
-              className="px-4 py-2 border border-gold-500/50 text-gold-500 hover:bg-gold-500/10 font-mono text-xs uppercase tracking-widest transition-colors flex items-center cursor-pointer disabled:opacity-50"
-            >
-              <UploadCloud size={14} className="mr-2" /> Append Evidence
-            </button>
+          {statusStr === 'Disputed' && (
+            <>
+              {/* ⚖ THE MISSING STEP — now fixed! */}
+              {!jurorsSelected && (
+                <button
+                  onClick={handleSelectJurors}
+                  disabled={isPending}
+                  className="px-4 py-2 border border-purple-500/70 text-purple-400 hover:bg-purple-500/10 font-mono text-xs uppercase tracking-widest transition-colors flex items-center cursor-pointer disabled:opacity-50 animate-pulse"
+                >
+                  ⚖ Convene Jury
+                </button>
+              )}
+
+              {(isPartyA || isPartyB) && (
+                <button
+                  onClick={() => {
+                    setEvidenceAction(isPartyA ? 'appendEvidenceA' : 'appendEvidenceB');
+                    setEvidenceModalOpen(true);
+                  }}
+                  disabled={isPending}
+                  className="px-4 py-2 border border-gold-500/50 text-gold-500 hover:bg-gold-500/10 font-mono text-xs uppercase tracking-widest transition-colors flex items-center cursor-pointer disabled:opacity-50"
+                >
+                  <UploadCloud size={14} className="mr-2" /> Append Evidence
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
