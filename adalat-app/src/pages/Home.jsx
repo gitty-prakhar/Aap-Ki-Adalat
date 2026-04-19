@@ -32,7 +32,7 @@ const Home = () => {
             to="/file-case"
             className="px-8 py-4 bg-gold-500 text-dark-900 font-mono text-xs font-bold tracking-widest hover:bg-gold-400 transition-colors"
           >
-            FILE A DISPUTE
+            CREATE A CONTRACT
           </Link>
           <Link 
             to="/juror-panel"
@@ -59,7 +59,7 @@ const Home = () => {
           <span className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">Active Jurors</span>
         </div>
         <div className="bg-dark-900 p-8 flex flex-col items-start justify-center">
-          <span className="text-3xl font-serif text-gold-500 mb-2">3.75 <span className="text-xl">ETH</span></span>
+          <span className="text-3xl font-serif text-gold-500 mb-2">0.375 <span className="text-xl">ETH</span></span>
           <span className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">In Escrow</span>
         </div>
         <div className="bg-dark-900 p-8 flex flex-col items-start justify-center">

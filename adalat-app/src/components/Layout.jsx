@@ -36,7 +36,7 @@ const Layout = () => {
 
   const navItems = [
     { to: '/', label: 'HOME' },
-    { to: '/disputes', label: 'DISPUTES' },
+    { to: '/disputes', label: 'ESCROW PANEL' },
     { to: '/file-case', label: 'FILE CASE' },
     { to: '/juror-panel', label: 'JUROR PANEL' },
     { to: '/stake', label: 'STAKE' },
