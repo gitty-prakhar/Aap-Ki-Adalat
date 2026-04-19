@@ -5,46 +5,62 @@ import { formatEther } from 'viem';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+};
+
 const EvidenceView = ({ evidenceA, evidenceB }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-      <div className="p-4 border border-dark-700 bg-dark-900/50">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.5 }}
+      className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"
+    >
+      <div className="p-4 border border-dark-700 bg-dark-900/50 card-hover">
         <h5 className="text-xs font-mono text-gold-500 mb-2 uppercase">Party A Evidence</h5>
         {evidenceA && evidenceA.length > 0 ? (
           evidenceA.map((cid, idx) => (
-            <a
+            <motion.a
               key={idx}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.05 }}
               href={`https://gateway.pinata.cloud/ipfs/${cid}`}
               target="_blank"
               rel="noreferrer"
               className="block text-[10px] text-blue-400 font-mono hover:underline truncate mb-1"
             >
               📎 {cid}
-            </a>
+            </motion.a>
           ))
         ) : (
           <p className="text-[10px] text-gray-500 font-mono italic">No evidence uploaded yet.</p>
         )}
       </div>
-      <div className="p-4 border border-dark-700 bg-dark-900/50">
+      <div className="p-4 border border-dark-700 bg-dark-900/50 card-hover">
         <h5 className="text-xs font-mono text-gold-500 mb-2 uppercase">Party B Evidence</h5>
         {evidenceB && evidenceB.length > 0 ? (
           evidenceB.map((cid, idx) => (
-            <a
+            <motion.a
               key={idx}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.05 }}
               href={`https://gateway.pinata.cloud/ipfs/${cid}`}
               target="_blank"
               rel="noreferrer"
               className="block text-[10px] text-blue-400 font-mono hover:underline truncate mb-1"
             >
               📎 {cid}
-            </a>
+            </motion.a>
           ))
         ) : (
           <p className="text-[10px] text-gray-500 font-mono italic">No evidence uploaded yet.</p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -140,18 +156,38 @@ const ActiveCaseView = ({ caseId }) => {
   };
 
   if (!dispute)
-    return <div className="text-gray-500 font-mono p-4">Loading active case details...</div>;
+    return <div className="text-gray-500 font-mono p-4 skeleton h-20 rounded-sm"></div>;
 
   return (
-    <div className="bg-dark-800 border-2 border-gold-500/50 p-6 mt-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="bg-dark-800 border-2 border-gold-500/50 p-6 mt-6 shimmer-border"
+    >
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-serif text-white">Active Case Assignment</h3>
-        <span className="px-3 py-1 bg-red-500/20 text-red-400 font-mono text-[10px] tracking-widest uppercase border border-red-500/40">
+        <motion.span
+          animate={{
+            boxShadow: [
+              '0 0 0px rgba(239,68,68,0)',
+              '0 0 10px rgba(239,68,68,0.2)',
+              '0 0 0px rgba(239,68,68,0)',
+            ],
+          }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="px-3 py-1 bg-red-500/20 text-red-400 font-mono text-[10px] tracking-widest uppercase border border-red-500/40"
+        >
           You are Locked
-        </span>
+        </motion.span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-xs font-mono mb-4 text-gray-400">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-2 gap-4 text-xs font-mono mb-4 text-gray-400"
+      >
         <div>
           <span className="text-gray-500 uppercase">Dispute ID:</span> #{caseId.toString()}
         </div>
@@ -167,35 +203,47 @@ const ActiveCaseView = ({ caseId }) => {
           <span className="text-gray-500 uppercase">Voting Deadline:</span>{' '}
           {new Date(Number(dispute.votingDeadline) * 1000).toLocaleString()}
         </div>
-      </div>
+      </motion.div>
 
       <EvidenceView evidenceA={evA} evidenceB={evB} />
 
       <div className="mt-8 border-t border-dark-700 pt-6">
         {hasVoted ? (
-          <div className="text-center p-4 border border-green-500/30 bg-green-500/10 text-green-400 font-mono text-xs uppercase">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center p-4 border border-green-500/30 bg-green-500/10 text-green-400 font-mono text-xs uppercase"
+          >
             You have already voted for this round! Wait for round resolution.
-          </div>
+          </motion.div>
         ) : (
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
             <h4 className="text-sm font-mono text-white mb-4 text-center uppercase tracking-widest">
               Cast Your Vote
             </h4>
             <div className="flex space-x-6 justify-center">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.04, borderColor: '#eab308' }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => handleVote(0)}
                 disabled={isPending}
-                className="px-8 py-3 bg-dark-900 border border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-dark-900 font-mono text-xs uppercase transition-colors cursor-pointer disabled:opacity-50"
+                className="px-8 py-3 bg-dark-900 border border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-dark-900 font-mono text-xs uppercase transition-colors cursor-pointer disabled:opacity-50 btn-press"
               >
                 In Favor of Party A
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.04, borderColor: '#eab308' }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => handleVote(1)}
                 disabled={isPending}
-                className="px-8 py-3 bg-dark-900 border border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-dark-900 font-mono text-xs uppercase transition-colors cursor-pointer disabled:opacity-50"
+                className="px-8 py-3 bg-dark-900 border border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-dark-900 font-mono text-xs uppercase transition-colors cursor-pointer disabled:opacity-50 btn-press"
               >
                 In Favor of Party B
-              </button>
+              </motion.button>
             </div>
             <div className="text-center mt-6">
               <button
@@ -205,10 +253,10 @@ const ActiveCaseView = ({ caseId }) => {
                 Resolve Round (if deadline passed)
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -268,50 +316,80 @@ const JurorPanel = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-10">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-10"
+      >
         <h2 className="text-3xl font-serif text-white mb-2">Juror Panel</h2>
         <p className="text-xs font-mono text-gray-400 tracking-wider">
           Review evidence and vote on assigned cases. Claim your rewards for honest participation.
         </p>
-      </div>
+      </motion.div>
 
       {!address ? (
-        <div className="text-center py-20 text-gray-500 font-mono text-sm border border-dark-800 bg-dark-900/50">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-20 text-gray-500 font-mono text-sm border border-dark-800 bg-dark-900/50"
+        >
           Please connect your wallet to access the Juror Panel.
-        </div>
+        </motion.div>
       ) : (
         <>
           {/* Rewards Section */}
-          <div className="bg-dark-800 border border-dark-700 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="bg-dark-800 border border-dark-700 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 card-hover shimmer-border"
+          >
             <div>
               <p className="text-xs font-mono text-gray-500 uppercase tracking-widest mb-1">
                 Pending Rewards
               </p>
-              <p className="text-2xl font-serif text-gold-500">
+              <motion.p
+                className="text-2xl font-serif text-gold-gradient"
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200 }}
+              >
                 {pendingRewards ? formatEther(pendingRewards) : '0'}{' '}
                 <span className="text-[10px] uppercase">ETH</span>
-              </p>
+              </motion.p>
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleWithdraw}
               disabled={isPending || !pendingRewards || pendingRewards === 0n}
-              className="px-6 py-3 bg-gold-500 text-dark-900 font-mono text-xs font-bold uppercase transition-colors hover:bg-gold-400 disabled:opacity-50 cursor-pointer"
+              className="px-6 py-3 bg-gold-500 text-dark-900 font-mono text-xs font-bold uppercase transition-colors hover:bg-gold-400 disabled:opacity-50 cursor-pointer btn-press"
             >
               Withdraw Rewards
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
 
           {/* Active Cases Section */}
           {status && status.isLocked ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
               <ActiveCaseView caseId={status.lockedCase} />
             </motion.div>
           ) : (
-            <div className="text-center py-20 text-gray-500 font-mono text-sm border border-dark-800 bg-dark-900/50 shadow-inner">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-center py-20 text-gray-500 font-mono text-sm border border-dark-800 bg-dark-900/50 shadow-inner"
+            >
               {status && status.isActive
                 ? 'You are an active juror. No cases assigned to you currently. Keep an eye out!'
                 : 'You are not an active juror. Head to the STAKE tab to become one.'}
-            </div>
+            </motion.div>
           )}
         </>
       )}

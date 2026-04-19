@@ -18,6 +18,7 @@
     background-color: var(--color-dark-900);
     color: #e5e7eb;
     font-family: var(--font-sans);
+    overflow-x: hidden;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
@@ -38,4 +39,215 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #ca8a04;
+}
+
+/* ═══════════════════════════════════════════════
+   PREMIUM ANIMATION SYSTEM
+   ═══════════════════════════════════════════════ */
+
+/* Shimmer sweep — used on borders and highlights */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Ambient glow pulse */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* Floating particle drift */
+@keyframes float-up {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-100vh) translateX(30px); opacity: 0; }
+}
+
+@keyframes float-down {
+  0% { transform: translateY(-20px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(20px); opacity: 0; }
+}
+
+/* Soft breathing border */
+@keyframes border-breathe {
+  0%, 100% { border-color: rgba(234, 179, 8, 0.15); }
+  50% { border-color: rgba(234, 179, 8, 0.4); }
+}
+
+/* Gradient text shimmer */
+@keyframes text-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Spin for loading */
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Radial ring expand */
+@keyframes ring-expand {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Scale badge */
+@keyframes scale-breathe {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.08) rotate(2deg); }
+  75% { transform: scale(1.08) rotate(-2deg); }
+}
+
+/* ═══════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════ */
+
+/* Shimmer border effect for cards */
+.shimmer-border {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 33%,
+    rgba(234, 179, 8, 0.5) 50%,
+    transparent 67%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 4s linear infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Ambient floating particle */
+.particle {
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  background: rgba(234, 179, 8, 0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: float-up linear infinite;
+}
+
+/* Gradient gold text */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #eab308, #fbbf24, #d97706, #eab308);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shimmer 6s ease infinite;
+}
+
+/* Glow dot for status indicators */
+.glow-dot {
+  position: relative;
+}
+.glow-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  transform: translateY(-50%);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Interactive card hover lift */
+.card-hover {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(234, 179, 8, 0.08);
+  border-color: rgba(234, 179, 8, 0.3) !important;
+}
+
+/* Button press animation */
+.btn-press {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+.btn-press:hover {
+  box-shadow: 0 0 20px rgba(234, 179, 8, 0.15);
+}
+
+/* Ambient background glow blob */
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+  animation: glow-pulse 8s ease-in-out infinite;
+}
+
+/* Scale badge breathing */
+.scale-badge {
+  animation: scale-breathe 4s ease-in-out infinite;
+}
+
+/* Navigation link underline animation */
+.nav-link-animated {
+  position: relative;
+}
+.nav-link-animated::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #eab308;
+  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-link-animated:hover::after,
+.nav-link-animated.active::after {
+  width: 100%;
+}
+
+/* Header glass effect */
+.glass-header {
+  background: rgba(10, 10, 10, 0.7) !important;
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+}
+
+/* Input focus glow */
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.3), 0 0 16px rgba(234, 179, 8, 0.08);
+}
+
+/* Loading skeleton shimmer */
+.skeleton {
+  background: linear-gradient(90deg, #171717 25%, #262626 50%, #171717 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
