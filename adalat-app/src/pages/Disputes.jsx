@@ -58,15 +58,23 @@ const EscrowItem = ({ escrowId }) => {
     args: [escrowId],
   });
 
-  // The escrowId maps 1:1 to disputeId in this contract architecture
-  const disputeId = escrowId;
+  // Step 1: Get the real disputeId registered in DisputeResolver for this escrow
+  const { data: linkedDisputeId, refetch: refetchDisputeId } = useReadContract({
+    address: ADDRESSES.DisputeResolver,
+    abi: ABIS.DisputeResolver,
+    functionName: 'escrowToDispute',
+    args: [escrowId],
+  });
+  const realDisputeId = linkedDisputeId ?? 0n;
+  const disputeRegistered = realDisputeId > 0n;
 
-  // Read dispute jurors to know if selectJurors was already called
+  // Step 2: Read jurors using the REAL disputeId (not escrowId)
   const { data: disputeJurors, refetch: refetchJurors } = useReadContract({
     address: ADDRESSES.DisputeResolver,
     abi: ABIS.DisputeResolver,
     functionName: 'getDisputeJurors',
-    args: [disputeId],
+    args: [realDisputeId],
+    query: { enabled: disputeRegistered },
   });
 
   const { writeContract, data: txHash, isPending } = useWriteContract();
@@ -79,14 +87,17 @@ const EscrowItem = ({ escrowId }) => {
     if (txConfirmed) {
       if (currentTxType === 'selectJurors') {
         toast.success('Jury Successfully Convened! Voting is now open.');
+      } else if (currentTxType === 'initiateDispute') {
+        toast.success('Dispute registered with arbitration system! You can now Convene Jury.');
       } else {
         toast.success('Transaction confirmed!');
       }
       setCurrentTxType(null);
       refetch();
       refetchJurors();
+      refetchDisputeId();
     }
-  }, [txConfirmed, currentTxType, refetch, refetchJurors]);
+  }, [txConfirmed, currentTxType, refetch, refetchJurors, refetchDisputeId]);
 
   if (!escrow)
     return <div className="p-4 border border-dark-800 animate-pulse bg-dark-800/50 h-32"></div>;
@@ -102,6 +113,7 @@ const EscrowItem = ({ escrowId }) => {
     status: Number(escrow.status),
     partyAComplete: escrow.partyAComplete,
     partyBComplete: escrow.partyBComplete,
+    evidenceHash: escrow.evidenceHash || '',
   };
 
   // Safety guard — if any critical field is missing/zero-address, show a graceful error
@@ -136,10 +148,31 @@ const EscrowItem = ({ escrowId }) => {
     });
   };
 
-  // THE MISSING STEP: This was the bug. selectJurors() must be called after
-  // fileDispute() to lock eligible staked jurors onto the case for voting.
-  // NOTE: We pass an explicit gas limit because the contract uses gasleft()/block.gaslimit
-  // for pseudo-randomness — Wagmi's auto-estimation overshoots and triggers a revert.
+  // Step A: Register the dispute on DisputeResolver (must happen before selectJurors)
+  const handleInitiateDispute = () => {
+    setCurrentTxType('initiateDispute');
+    writeContract(
+      {
+        address: ADDRESSES.DisputeResolver,
+        abi: ABIS.DisputeResolver,
+        functionName: 'initiateDispute',
+        args: [
+          escrowId,
+          ADDRESSES.EscrowFactory,
+          escrowData.partyA,
+          escrowData.partyB,
+          escrowData.amount,
+          escrowData.evidenceHash,
+          '',
+        ],
+      },
+      {
+        onError: (err) => toast.error('Registration failed: ' + (err.shortMessage || err.message)),
+      }
+    );
+  };
+
+  // Step B: Select jurors using the REAL disputeId from DisputeResolver
   const handleSelectJurors = () => {
     setCurrentTxType('selectJurors');
     writeContract(
@@ -147,8 +180,8 @@ const EscrowItem = ({ escrowId }) => {
         address: ADDRESSES.DisputeResolver,
         abi: ABIS.DisputeResolver,
         functionName: 'selectJurors',
-        args: [disputeId],
-        gas: 300000n,
+        args: [realDisputeId],
+        gas: 800000n,
       },
       {
         onError: (err) => toast.error('Convene Jury failed: ' + (err.shortMessage || err.message)),
@@ -175,14 +208,14 @@ const EscrowItem = ({ escrowId }) => {
           address: ADDRESSES.DisputeResolver,
           abi: ABIS.DisputeResolver,
           functionName: 'appendEvidenceA',
-          args: [escrowId, cid],
+          args: [realDisputeId, cid],
         });
       } else if (evidenceAction === 'appendEvidenceB') {
         writeContract({
           address: ADDRESSES.DisputeResolver,
           abi: ABIS.DisputeResolver,
           functionName: 'appendEvidenceB',
-          args: [escrowId, cid],
+          args: [realDisputeId, cid],
         });
       }
       setEvidenceModalOpen(false);
@@ -217,7 +250,12 @@ const EscrowItem = ({ escrowId }) => {
             >
               {statusStr}
             </span>
-            {statusStr === 'Disputed' && (
+            {statusStr === 'Disputed' && !disputeRegistered && (
+              <span className="text-[10px] font-mono tracking-widest uppercase px-2 py-0.5 border text-orange-400 border-orange-400/30 bg-orange-400/10">
+                ⚠ Pending Registration
+              </span>
+            )}
+            {statusStr === 'Disputed' && disputeRegistered && (
               <span
                 className={`text-[10px] font-mono tracking-widest uppercase px-2 py-0.5 border ${
                   jurorsSelected
@@ -281,8 +319,19 @@ const EscrowItem = ({ escrowId }) => {
 
           {statusStr === 'Disputed' && (
             <>
-              {/* ⚖ THE MISSING STEP — now fixed! */}
-              {!jurorsSelected && (
+              {/* Step 1: Register the escrow dispute on DisputeResolver */}
+              {!disputeRegistered && (isPartyA || isPartyB) && (
+                <button
+                  onClick={handleInitiateDispute}
+                  disabled={isPending}
+                  className="px-4 py-2 border border-orange-500/70 text-orange-400 hover:bg-orange-500/10 font-mono text-xs uppercase tracking-widest transition-colors flex items-center cursor-pointer disabled:opacity-50 animate-pulse"
+                >
+                  ⚖ Register Dispute
+                </button>
+              )}
+
+              {/* Step 2: Once registered, convene the jury */}
+              {disputeRegistered && !jurorsSelected && (
                 <button
                   onClick={handleSelectJurors}
                   disabled={isPending}

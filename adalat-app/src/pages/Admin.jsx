@@ -76,6 +76,36 @@ const Admin = () => {
     );
   };
 
+  const handleLinkEscrowFactory = () => {
+    writeContract(
+      {
+        address: ADDRESSES.EscrowFactory,
+        abi: ABIS.EscrowFactory,
+        functionName: 'setDisputeResolver',
+        args: [ADDRESSES.DisputeResolver],
+      },
+      {
+        onError: (err) => toast.error('Linking failed: ' + (err.shortMessage || err.message)),
+        onSuccess: () => toast.success('Link transaction submitted!')
+      }
+    );
+  };
+
+  const handleLinkJurorRegistry = () => {
+    writeContract(
+      {
+        address: ADDRESSES.JurorRegistry,
+        abi: ABIS.JurorRegistry,
+        functionName: 'setDisputeResolver',
+        args: [ADDRESSES.DisputeResolver],
+      },
+      {
+        onError: (err) => toast.error('Linking failed: ' + (err.shortMessage || err.message)),
+        onSuccess: () => toast.success('Link transaction submitted!')
+      }
+    );
+  };
+
   // Show access denied if not owner
   if (!address) {
     return (
@@ -99,20 +129,47 @@ const Admin = () => {
         Admin Operations
       </h2>
 
-      <div className="p-6 bg-dark-800 border border-dark-700 space-y-4">
-        <h3 className="font-mono text-gray-300 uppercase tracking-widest text-xs">
-          Platform Funds
-        </h3>
-        <p className="text-2xl font-serif text-white">
-          {platformFunds ? formatEther(platformFunds) : '0'} ETH
-        </p>
-        <button
-          onClick={handleWithdrawFunds}
-          disabled={isPending || !platformFunds || platformFunds === 0n}
-          className="px-6 py-2 bg-gold-500 text-dark-900 font-bold font-mono text-xs uppercase hover:bg-gold-400 disabled:opacity-50 cursor-pointer"
-        >
-          Withdraw Funds
-        </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="p-6 bg-dark-800 border border-dark-700 space-y-4">
+          <h3 className="font-mono text-gray-300 uppercase tracking-widest text-xs">
+            Platform Funds
+          </h3>
+          <p className="text-2xl font-serif text-white">
+            {platformFunds ? formatEther(platformFunds) : '0'} ETH
+          </p>
+          <button
+            onClick={handleWithdrawFunds}
+            disabled={isPending || !platformFunds || platformFunds === 0n}
+            className="px-6 py-2 bg-gold-500 text-dark-900 font-bold font-mono text-xs uppercase hover:bg-gold-400 disabled:opacity-50 cursor-pointer"
+          >
+            Withdraw Funds
+          </button>
+        </div>
+
+        <div className="p-6 bg-dark-800 border border-dark-700 space-y-4">
+          <h3 className="font-mono text-gray-300 uppercase tracking-widest text-xs">
+            System Initialization / Link Contracts
+          </h3>
+          <p className="text-xs text-gray-400 font-mono uppercase leading-relaxed">
+            Wire the contracts together so they can interact during dispute arbitration.
+          </p>
+          <div className="space-y-3 pt-2">
+            <button
+              onClick={handleLinkEscrowFactory}
+              disabled={isPending}
+              className="w-full py-2.5 bg-gold-500 text-dark-900 font-bold font-mono text-xs uppercase hover:bg-gold-400 disabled:opacity-50 cursor-pointer"
+            >
+              1. Link EscrowFactory to Resolver
+            </button>
+            <button
+              onClick={handleLinkJurorRegistry}
+              disabled={isPending}
+              className="w-full py-2.5 bg-transparent border border-gold-500/50 text-gold-500 font-bold font-mono text-xs uppercase hover:bg-gold-500/10 disabled:opacity-50 cursor-pointer"
+            >
+              2. Link JurorRegistry to Resolver
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -1,6 +1,35 @@
 [
   {
     "inputs": [
+      { "internalType": "uint256", "name": "escrowId", "type": "uint256" },
+      { "internalType": "address", "name": "escrowContract", "type": "address" },
+      { "internalType": "address", "name": "partyA", "type": "address" },
+      { "internalType": "address", "name": "partyB", "type": "address" },
+      { "internalType": "uint256", "name": "escrowAmount", "type": "uint256" },
+      { "internalType": "string", "name": "evidenceA", "type": "string" },
+      { "internalType": "string", "name": "evidenceB", "type": "string" }
+    ],
+    "name": "initiateDispute",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "escrowToDispute",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "disputeCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "uint256",
         "name": "disputeId",
