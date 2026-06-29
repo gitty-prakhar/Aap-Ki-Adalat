@@ -3,6 +3,7 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { ABIS, ADDRESSES } from '../config/contracts';
 import { formatEther } from 'viem';
 import { toast } from 'react-hot-toast';
+import { parseError } from '../utils/errors';
 
 const Admin = () => {
   const { address } = useAccount();
@@ -40,7 +41,7 @@ const Admin = () => {
         abi: ABIS.RewardDistributor,
         functionName: 'withdrawPlatformFunds',
       },
-      { onError: (err) => toast.error(err.shortMessage || err.message) }
+      { onError: (err) => toast.error(parseError(err)) }
     );
   };
 
@@ -56,7 +57,7 @@ const Admin = () => {
         functionName: 'unlockJuror',
         args: [unlockJurorAddr, BigInt(unlockCaseId)],
       },
-      { onError: (err) => toast.error(err.shortMessage || err.message) }
+      { onError: (err) => toast.error(parseError(err)) }
     );
   };
 
@@ -72,7 +73,7 @@ const Admin = () => {
         functionName: 'selectJurors',
         args: [BigInt(selectJurorCaseId)],
       },
-      { onError: (err) => toast.error(err.shortMessage || err.message) }
+      { onError: (err) => toast.error(parseError(err)) }
     );
   };
 
@@ -85,7 +86,7 @@ const Admin = () => {
         args: [ADDRESSES.DisputeResolver],
       },
       {
-        onError: (err) => toast.error('Linking failed: ' + (err.shortMessage || err.message)),
+        onError: (err) => toast.error('Linking failed: ' + parseError(err)),
         onSuccess: () => toast.success('Link transaction submitted!')
       }
     );
@@ -100,7 +101,7 @@ const Admin = () => {
         args: [ADDRESSES.DisputeResolver],
       },
       {
-        onError: (err) => toast.error('Linking failed: ' + (err.shortMessage || err.message)),
+        onError: (err) => toast.error('Linking failed: ' + parseError(err)),
         onSuccess: () => toast.success('Link transaction submitted!')
       }
     );

@@ -4,6 +4,7 @@ import { parseEther } from 'viem';
 import { ABIS, ADDRESSES } from '../config/contracts';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { parseError } from '../utils/errors';
 
 const FileCase = () => {
   const { address, isConnected } = useAccount();
@@ -43,7 +44,7 @@ const FileCase = () => {
         },
         {
           onError: (err) => {
-            toast.error('Transaction Failed: ' + (err.shortMessage || err.message));
+            toast.error('Transaction Failed: ' + parseError(err));
           },
         }
       );

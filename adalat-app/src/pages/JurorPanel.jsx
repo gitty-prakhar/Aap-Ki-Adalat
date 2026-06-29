@@ -3,7 +3,9 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { ABIS, ADDRESSES } from '../config/contracts';
 import { formatEther } from 'viem';
 import { toast } from 'react-hot-toast';
+import { parseError } from '../utils/errors';
 import { motion } from 'framer-motion';
+import { JurorPanelSkeleton } from '../components/Skeleton';
 
 const EvidenceView = ({ evidenceA, evidenceB }) => {
   return (
@@ -120,7 +122,7 @@ const ActiveCaseView = ({ caseId }) => {
         args: [caseId, voteNum],
       },
       {
-        onError: (err) => toast.error(err.shortMessage || err.message),
+        onError: (err) => toast.error(parseError(err)),
       }
     );
   };
@@ -134,13 +136,13 @@ const ActiveCaseView = ({ caseId }) => {
         args: [caseId],
       },
       {
-        onError: (err) => toast.error(err.shortMessage || err.message),
+        onError: (err) => toast.error(parseError(err)),
       }
     );
   };
 
   if (!dispute)
-    return <div className="text-gray-500 font-mono p-4">Loading active case details...</div>;
+    return <JurorPanelSkeleton />;
 
   return (
     <div className="bg-dark-800 border-2 border-gold-500/50 p-6 mt-6">
@@ -181,7 +183,7 @@ const ActiveCaseView = ({ caseId }) => {
             <h4 className="text-sm font-mono text-white mb-4 text-center uppercase tracking-widest">
               Cast Your Vote
             </h4>
-            <div className="flex space-x-6 justify-center">
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 justify-center">
               <button
                 onClick={() => handleVote(0)}
                 disabled={isPending}
@@ -261,7 +263,7 @@ const JurorPanel = () => {
         functionName: 'withdraw',
       },
       {
-        onError: (err) => toast.error(err.shortMessage || err.message),
+        onError: (err) => toast.error(parseError(err)),
       }
     );
   };

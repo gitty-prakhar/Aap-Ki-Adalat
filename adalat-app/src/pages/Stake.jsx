@@ -4,6 +4,7 @@ import { ABIS, ADDRESSES } from '../config/contracts';
 import { formatEther } from 'viem';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { parseError } from '../utils/errors';
 
 const Stake = () => {
   const { address } = useAccount();
@@ -62,7 +63,7 @@ const Stake = () => {
       },
       {
         onError: (err) =>
-          toast.error('Staking failed: ' + (err.shortMessage || err.message)),
+          toast.error('Staking failed: ' + parseError(err)),
       }
     );
   };
@@ -76,7 +77,7 @@ const Stake = () => {
       },
       {
         onError: (err) =>
-          toast.error('Unstaking failed: ' + (err.shortMessage || err.message)),
+          toast.error('Unstaking failed: ' + parseError(err)),
       }
     );
   };

@@ -5,7 +5,9 @@ import { formatEther } from 'viem';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { uploadFileToIPFS } from '../utils/ipfs';
+import { parseError } from '../utils/errors';
 import { UploadCloud, CheckCircle, Clock, ShieldAlert } from 'lucide-react';
+import { EscrowSkeleton } from '../components/Skeleton';
 
 const EscrowStatus = ['Active', 'Completed', 'Disputed', 'Expired'];
 
@@ -167,7 +169,7 @@ const EscrowItem = ({ escrowId }) => {
         ],
       },
       {
-        onError: (err) => toast.error('Registration failed: ' + (err.shortMessage || err.message)),
+        onError: (err) => toast.error('Registration failed: ' + parseError(err)),
       }
     );
   };
@@ -184,7 +186,7 @@ const EscrowItem = ({ escrowId }) => {
         gas: 800000n,
       },
       {
-        onError: (err) => toast.error('Convene Jury failed: ' + (err.shortMessage || err.message)),
+        onError: (err) => toast.error('Convene Jury failed: ' + parseError(err)),
       }
     );
   };
@@ -397,7 +399,11 @@ const Disputes = () => {
           Please connect your wallet to view escrows.
         </div>
       ) : isLoading ? (
-        <div className="text-center py-20 text-gray-500 font-mono text-sm">Loading escrows...</div>
+        <div className="space-y-4">
+          <EscrowSkeleton />
+          <EscrowSkeleton />
+          <EscrowSkeleton />
+        </div>
       ) : userEscrows && userEscrows.length > 0 ? (
         <div className="space-y-4">
           {[...userEscrows].reverse().map((id, index) => (
