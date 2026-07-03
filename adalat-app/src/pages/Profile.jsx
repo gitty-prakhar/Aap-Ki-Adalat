@@ -7,8 +7,9 @@ import { toast } from 'react-hot-toast';
 import {
   User, Copy, ExternalLink, Bell, BellOff, Mail, Shield,
   CheckCircle, XCircle, Clock, AlertTriangle, Gavel,
-  TrendingUp, Scale, Lock, Award
+  TrendingUp, Scale, Lock, Award, Activity
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // ── Wallet Avatar (gradient based on address) ──────────────────────────
 const WalletAvatar = ({ address, size = 64 }) => {
@@ -93,6 +94,14 @@ const EscrowRow = ({ escrowId, userAddress }) => {
       </td>
       <td className="px-4 py-3 font-mono text-[10px] text-gray-600">
         {deadline ? (isExpired ? 'Expired' : deadline.toLocaleDateString()) : '—'}
+      </td>
+      <td className="px-4 py-3 text-right">
+        <Link
+          to={`/escrow/${escrowId.toString()}`}
+          className="px-3 py-1 bg-dark-800 border border-dark-600 text-gray-400 hover:text-white hover:border-dark-500 font-mono text-[10px] uppercase tracking-widest transition-colors inline-block"
+        >
+          View Details
+        </Link>
       </td>
     </tr>
   );
@@ -428,7 +437,7 @@ const Profile = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-dark-700/40">
-                  {['ID', 'Role', 'Amount', 'Status', 'Deadline'].map((col) => (
+                  {['ID', 'Role', 'Amount', 'Status', 'Deadline', 'Action'].map((col) => (
                     <th key={col} className="px-4 py-3 text-[9px] font-mono text-gray-600 uppercase tracking-widest">
                       {col}
                     </th>
@@ -470,19 +479,99 @@ const Profile = () => {
           <a
             key={item.to}
             href={item.to}
-            className="flex items-start space-x-3 p-4 border border-dark-700/60 bg-dark-800/50 hover:border-gold-500/30 hover:bg-dark-800 transition-all duration-200 group"
+            className="bg-dark-800 border border-dark-700/60 p-6 flex flex-col items-center text-center hover:border-gold-500/50 transition-colors group"
           >
-            <div className="p-2 border border-dark-600 bg-dark-700 text-gold-500 group-hover:border-gold-500/40 transition-colors flex-shrink-0">
-              <item.icon size={14} />
+            <div className="w-12 h-12 bg-dark-900 border border-dark-700 rounded-full flex items-center justify-center mb-4 group-hover:bg-gold-500/10 transition-colors">
+              <item.icon size={20} className="text-gray-500 group-hover:text-gold-500 transition-colors" />
             </div>
-            <div>
-              <p className="text-xs font-serif text-white group-hover:text-gold-500 transition-colors">{item.label}</p>
-              <p className="text-[10px] font-mono text-gray-600 mt-0.5">{item.desc}</p>
-            </div>
+            <h4 className="text-sm font-serif text-white mb-2">{item.label}</h4>
+            <p className="text-[10px] font-mono text-gray-500">{item.desc}</p>
           </a>
         ))}
       </motion.div>
 
+      {/* ── Transaction History ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-dark-800 border border-dark-700/60 mt-8 mb-20"
+      >
+        <div className="flex items-center px-6 py-4 border-b border-dark-700/60">
+          <Activity size={14} className="text-gold-500 mr-3" />
+          <h3 className="text-sm font-serif text-white">Wallet Transaction History</h3>
+        </div>
+        <div className="p-6">
+          <TransactionHistory address={address} />
+        </div>
+      </motion.div>
+
+    </div>
+  );
+};
+
+const TransactionHistory = ({ address }) => {
+  const [txs, setTxs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!address) return;
+    const fetchTxs = async () => {
+      try {
+        setLoading(true);
+        // Using Etherscan API for Sepolia
+        const res = await fetch(`https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=15&sort=desc&apikey=YourApiKeyToken`);
+        const data = await res.json();
+        if (data.status === '1') {
+          setTxs(data.result);
+        } else {
+          setTxs([]);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTxs();
+  }, [address]);
+
+  if (loading) return <div className="text-xs font-mono text-gray-500 animate-pulse">Loading transactions...</div>;
+  if (!txs.length) return <div className="text-xs font-mono text-gray-500">No transactions found for this wallet.</div>;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left">
+        <thead>
+          <tr className="border-b border-dark-700/40">
+            {['Tx Hash', 'Method', 'Date', 'Value (ETH)'].map((col) => (
+              <th key={col} className="px-4 py-3 text-[9px] font-mono text-gray-600 uppercase tracking-widest">
+                {col}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {txs.map((tx) => (
+            <tr key={tx.hash} className="border-b border-dark-700/40 hover:bg-dark-700/20 transition-colors">
+              <td className="px-4 py-3 font-mono text-[10px] text-gold-500">
+                <a href={`https://sepolia.etherscan.io/tx/${tx.hash}`} target="_blank" rel="noreferrer" className="hover:underline flex items-center">
+                  {tx.hash.slice(0, 10)}... <ExternalLink size={10} className="ml-1"/>
+                </a>
+              </td>
+              <td className="px-4 py-3 font-mono text-[10px] text-gray-300 truncate max-w-[120px]">
+                {tx.functionName ? tx.functionName.split('(')[0] : 'Transfer'}
+              </td>
+              <td className="px-4 py-3 font-mono text-[10px] text-gray-500">
+                {new Date(Number(tx.timeStamp) * 1000).toLocaleString()}
+              </td>
+              <td className="px-4 py-3 font-mono text-[10px] text-gray-300">
+                {parseFloat(formatEther(BigInt(tx.value))).toFixed(4)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import JurorPanel from './pages/JurorPanel';
 import Stake from './pages/Stake';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
+import CaseDetails from './pages/CaseDetails';
 import { useRealtimeEvents } from './hooks/useRealtimeEvents';
 
 function AppContent() {
@@ -23,6 +24,7 @@ function AppContent() {
         <Route path="stake" element={<Stake />} />
         <Route path="admin" element={<Admin />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="escrow/:id" element={<CaseDetails />} />
       </Route>
     </Routes>
   );

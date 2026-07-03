@@ -127,19 +127,6 @@ const ActiveCaseView = ({ caseId }) => {
     );
   };
 
-  const handleResolve = () => {
-    writeContract(
-      {
-        address: ADDRESSES.DisputeResolver,
-        abi: ABIS.DisputeResolver,
-        functionName: 'resolveRound',
-        args: [caseId],
-      },
-      {
-        onError: (err) => toast.error(parseError(err)),
-      }
-    );
-  };
 
   if (!dispute)
     return <JurorPanelSkeleton />;
@@ -199,16 +186,9 @@ const ActiveCaseView = ({ caseId }) => {
                 In Favor of Party B
               </button>
             </div>
-            <div className="text-center mt-6">
-              <button
-                onClick={handleResolve}
-                className="text-[10px] text-gray-600 underline font-mono hover:text-gray-400 cursor-pointer"
-              >
-                Resolve Round (if deadline passed)
-              </button>
-            </div>
           </div>
         )}
+
       </div>
     </div>
   );
