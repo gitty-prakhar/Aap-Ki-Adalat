@@ -46,7 +46,7 @@ Follow these steps to run the frontend locally:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/gitty-prakhar/Aap-Ki-Adalat.git
+   git clone https://github.com/himanshu12006/Aap-Ki-Adalat.git
    cd Aap-Ki-Adalat/adalat-app
    ```
 
@@ -74,7 +74,7 @@ Follow these steps to run the frontend locally:
    Navigate to `http://localhost:5173`
 
 ## 👥 Team
-- **Prakhar Gupta** - Team Lead & Developer
+- **Himanshu Prajapati** - Developer
 - Developed during **Hackofiesta** (4-member team project).
 
 ## 📄 License
